@@ -92,4 +92,5 @@ model Expense {
 
   category Category? @relation(fields: [categoryId], references: [id])
   user     User     @relation(fields: [userId], references: [id])
+  month      String   @default("2025-01")  // <--- default for existing rows
 }

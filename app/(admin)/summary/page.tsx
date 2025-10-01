@@ -1,6 +1,7 @@
 "use client";
 
 import ExpenseChartLineInteractive from "@/components/ExpenseChartLineInteractive";
+import  { LineChartMod } from "@/components/charts/LineChartMod";
 import { useEffect, useState } from "react";
 
 type SummaryItem = {
@@ -34,6 +35,7 @@ export default function ExpenseSummary() {
           </li>
         ))}
       </ul>
+      <LineChartMod />
       <ExpenseChartLineInteractive />
     </div>
   );

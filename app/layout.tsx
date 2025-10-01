@@ -16,8 +16,9 @@ const notoSansKR = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
-  title: "Better Auth Starter",
-  description: "Next.js + Better Auth + Shadcn UI + Tailwind CSS",
+  title: "Expense Tracker",
+  description:
+    "Track, manage, and analyze your expenses efficiently with real-time insights",
   icons: {
     icon: "/logo.png",
   },
@@ -32,6 +33,7 @@ export default async function RootLayout({
     headers: await headers(),
   });
   const user = session?.user ?? null;
+
   return (
     <UserProvider user={user}>
       <Navbar />
@@ -40,8 +42,12 @@ export default async function RootLayout({
         className={`${notoSansKR.variable}`}
         suppressHydrationWarning
       >
-        <body className={` antialiased`}>
-          <NextTopLoader showSpinner={false} height={6} color="#000000" />
+        <body className="antialiased bg-background text-foreground">
+          <NextTopLoader
+            showSpinner={false}
+            height={6}
+            color="var(--primary)"
+          />
           <Toaster richColors position="top-right" />
           <main className="min-h-screen">{children}</main>
         </body>

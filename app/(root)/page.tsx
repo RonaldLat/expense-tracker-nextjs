@@ -1,4 +1,5 @@
-import HeroSection from "@/components/hero-section";
+import HeroSection from "@/components/landing-section";
+import LandingSection from "@/components/home-section";
 import TechStackSection from "@/components/tech-stack-section";
 
 export default function Home() {
@@ -6,6 +7,7 @@ export default function Home() {
     <>
       <HeroSection />
       <TechStackSection />
+      {/* <LandingSection/> */}
     </>
   );
 }
