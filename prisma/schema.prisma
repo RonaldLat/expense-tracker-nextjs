@@ -8,7 +8,7 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())    // unique string ID
+  id            String     @id @default(cuid())
   email         String     @unique
   name          String?
   emailVerified Boolean    @default(false)
@@ -17,6 +17,8 @@ model User {
   updatedAt     DateTime   @updatedAt
   sessions      Session[]
   accounts      Account[]
+  expenses      Expense[]
+  categories    Category[]
 
   @@map("user")
 }
@@ -63,4 +65,31 @@ model Verification {
   updatedAt  DateTime? @updatedAt
 
   @@map("verification")
+}
+
+model Category {
+  id        String    @id @default(cuid())
+  name      String
+  userId    String?   // null = shared
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expenses  Expense[]
+
+  @@unique([name, userId]) // ✅ ensures uniqueness per user (null = shared is treated separately)
+}
+
+model Expense {
+  id         String    @id @default(cuid())
+  title      String
+  amount     Float
+  notes      String?
+  date       DateTime @default(now())
+  categoryId String?
+  userId     String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category Category? @relation(fields: [categoryId], references: [id])
+  user     User     @relation(fields: [userId], references: [id])
 }

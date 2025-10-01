@@ -1,0 +1,24 @@
+### Create a new category
+POST http://localhost:3000/api/categories
+Content-Type: application/json
+Cookie: better-auth.session_token=5kawNiAYITpB5y57bzDvxWBhbtLpe1og.eRe0XwP%2FXFGek4dQMcxMmusKcO4elLJyGETkI%2Ba8dgM%3D
+
+{
+  "name": "Groceries"
+}
+
+
+### Get All Categories
+GET http://localhost:3000/api/categories
+Content-Type: application/json
+Cookie: better-auth.session_token=5kawNiAYITpB5y57bzDvxWBhbtLpe1og.eRe0XwP%2FXFGek4dQMcxMmusKcO4elLJyGETkI%2Ba8dgM%3D
+# Authorization: Bearer YOUR_SESSION_TOKEN
+
+### Create a new category: School
+POST http://localhost:3000/api/categories
+Content-Type: application/json
+Cookie: better-auth.session_token=5kawNiAYITpB5y57bzDvxWBhbtLpe1og.eRe0XwP%2FXFGek4dQMcxMmusKcO4elLJyGETkI%2Ba8dgM%3D
+
+{
+  "name": "School"
+}

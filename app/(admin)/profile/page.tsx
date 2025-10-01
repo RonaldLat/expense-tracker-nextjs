@@ -1,6 +1,6 @@
 import ProfileCard from "@/components/profile-card"
 
-export default function DashboardPage() {
+export default function ProfilePage() {
    return (
       <div className="flex flex-col gap-6 w-full">
          <div className="flex flex-col gap-2">
