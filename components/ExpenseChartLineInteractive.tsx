@@ -24,7 +24,6 @@ type ExpenseItem = {
 
 export default function ExpenseChartLineInteractive() {
   const [data, setData] = React.useState<ExpenseItem[]>([]);
-  const [activeChart, setActiveChart] = React.useState<keyof ChartConfig>(
     "desktop"
   );
 
