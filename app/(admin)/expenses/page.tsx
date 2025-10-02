@@ -4,6 +4,7 @@ import * as React from "react";
 import { DataTable } from "./data-table.tsx";
 import { columnsFactory } from "./columns";
 import { ExpenseForm } from "./ExpenseForm";
+import { EditExpenseForm } from "./EditExpenseForm";
 
 export type Category = { id: string; name: string };
 export type Expense = {
@@ -19,6 +20,7 @@ export type Expense = {
 export default function ExpensesPage() {
   const [expenses, setExpenses] = React.useState<Expense[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
+  const [editing, setEditing] = React.useState<Expense | null>(null);
 
   // fetch data on mount
   React.useEffect(() => {
@@ -55,6 +57,13 @@ export default function ExpensesPage() {
     setExpenses((prev) => prev.filter((exp) => exp.id !== id));
   };
 
+  // handle edit save
+  const handleEdited = (updated: Expense) => {
+    setExpenses((prev) =>
+      prev.map((exp) => (exp.id === updated.id ? updated : exp))
+    );
+  };
+
   return (
     <div className="p-6 space-y-6">
       {/* ✅ Form stays at top */}
@@ -65,6 +74,16 @@ export default function ExpensesPage() {
         columns={columnsFactory(categories, handleUpdate, handleDelete)}
         data={expenses}
       />
+
+      {/* ✅ Edit modal */}
+      {editing && (
+        <EditExpenseForm
+          expense={editing}
+          categories={categories}
+          onClose={() => setEditing(null)}
+          onUpdated={handleEdited}
+        />
+      )}
     </div>
   );
 }
