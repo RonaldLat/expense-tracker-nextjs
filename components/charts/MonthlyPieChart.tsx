@@ -2,6 +2,7 @@
 
 import { Pie, PieChart } from "recharts";
 import { useEffect, useState } from "react";
+import * as React from "react";
 
 import {
   Card,
@@ -24,8 +25,15 @@ interface CategoryExpense {
   total: number;
 }
 
+// 1. Define the ChartData interface that includes the dynamically added properties
+interface ChartData extends CategoryExpense {
+  fill: string;
+  key: string;
+}
+
 export function MonthlyPieChart() {
-  const [data, setData] = useState<CategoryExpense[]>([]);
+  // 2. Use the new ChartData[] type for the component state
+  const [data, setData] = useState<ChartData[]>([]);
 
   useEffect(() => {
     async function fetchData() {
@@ -34,8 +42,9 @@ export function MonthlyPieChart() {
         if (!res.ok) throw new Error("Failed to fetch category expenses");
         const json: CategoryExpense[] = await res.json();
 
-        // Add `fill` dynamically for Recharts
-        const coloredData = json.map((item, index) => ({
+        // Add `fill` and `key` dynamically
+        // 3. Explicitly type the result of the map as ChartData[]
+        const coloredData: ChartData[] = json.map((item, index) => ({
           ...item,
           fill: `var(--chart-${(index % 5) + 1})`, // cycle through chart colors
           key: `${item.category}-${index}`, // unique key
@@ -70,8 +79,9 @@ export function MonthlyPieChart() {
               data={data}
               dataKey="total"
               nameKey="category"
-              // unique key for each slice
-              key={(entry) => entry.key}
+              // FIX: Removed the conflicting 'key' prop. Recharts will handle keys internally.
+              // key={(entry: ChartData) => entry.key} // THIS LINE IS REMOVED
+              // The fill will be automatically picked up from the 'fill' property of the data object
             />
             <ChartLegend
               content={<ChartLegendContent nameKey="category" />}

@@ -21,13 +21,20 @@ import {
 
 export const description = "Bar chart showing category expenses";
 
+// Base type for data returned from the API
 interface CategoryExpense {
   category: string;
   total: number;
 }
 
+// Type that includes the dynamic color property 'fill'
+interface ChartData extends CategoryExpense {
+  fill: string;
+}
+
 export function ChartBarExpenses() {
-  const [data, setData] = React.useState<CategoryExpense[]>([]);
+  // Use ChartData[] for the component state
+  const [data, setData] = React.useState<ChartData[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -35,12 +42,15 @@ export function ChartBarExpenses() {
       try {
         const res = await fetch("/api/expenses/categories");
         if (!res.ok) throw new Error("Failed to fetch category expenses");
+
+        // Data from API is CategoryExpense[]
         const json: CategoryExpense[] = await res.json();
 
-        // Add colors inline
-        const coloredData = json.map((item, index) => ({
+        // Add colors inline and ensure the result is correctly typed as ChartData[]
+        const coloredData: ChartData[] = json.map((item, index) => ({
           ...item,
-          fill: `oklch(${0.488 + index * 0.1} 0.22 ${50 + index * 50})`, // example variation
+          // Example variation for distinct colors
+          fill: `oklch(${0.488 + index * 0.1} 0.22 ${50 + index * 50})`,
         }));
 
         setData(coloredData);
@@ -55,7 +65,7 @@ export function ChartBarExpenses() {
   }, []);
 
   const chartConfig: ChartConfig = React.useMemo(() => {
-    return data.reduce((acc, item, index) => {
+    return data.reduce((acc, item) => {
       acc[item.category] = { label: item.category, color: item.fill };
       return acc;
     }, {} as ChartConfig);
@@ -81,9 +91,12 @@ export function ChartBarExpenses() {
               tickLine={false}
               tickMargin={10}
               axisLine={false}
-              tickFormatter={(value) =>
-                chartConfig[value as keyof typeof chartConfig]?.label
-              }
+              // Previous fix: Explicitly ensure the tickFormatter always returns a string.
+              tickFormatter={(value: string): string => {
+                const configKey = value as keyof typeof chartConfig;
+                // Ensures the return value is explicitly coerced to a string.
+                return String(chartConfig[configKey]?.label ?? value);
+              }}
             />
             <XAxis dataKey="total" type="number" hide />
             <ChartTooltip
@@ -94,7 +107,8 @@ export function ChartBarExpenses() {
               dataKey="total"
               layout="vertical"
               radius={5}
-              fill={({ index }) => data[index].fill}
+              // FIX for line 111: Use the data key "fill" to pull the color from the data object
+              fill="fill"
             />
           </BarChart>
         </ChartContainer>

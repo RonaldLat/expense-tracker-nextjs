@@ -1,4 +1,3 @@
-// app/api/expenses/by-category/route.ts
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -25,8 +24,16 @@ export async function GET() {
     // Aggregate by category
     const categoryMap: Record<string, number> = {};
     for (const exp of expenses) {
-      if (!categoryMap[exp.categoryId]) categoryMap[exp.categoryId] = 0;
-      categoryMap[exp.categoryId] += exp.amount;
+      // FIX: Add a check to ensure categoryId is a string and not null
+      if (exp.categoryId === null) {
+        // Option 1: Skip expenses with no category
+        continue;
+      }
+
+      const categoryId = exp.categoryId;
+
+      if (!categoryMap[categoryId]) categoryMap[categoryId] = 0;
+      categoryMap[categoryId] += exp.amount;
     }
 
     // Fetch category names

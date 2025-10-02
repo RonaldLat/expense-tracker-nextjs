@@ -24,13 +24,31 @@ export async function GET() {
     });
 
     // Fetch category names
-    const categoryIds = expenses.map((e) => e.categoryId);
+    const rawCategoryIds = expenses.map((e) => e.categoryId);
+    
+    // FIX: Filter out null values before querying the database
+    const categoryIds = rawCategoryIds.filter((id): id is string => id !== null);
+
+    // If there are no non-null category IDs, return an empty array or handle as needed
+    if (categoryIds.length === 0) {
+      // If all expenses are uncategorized, 'expenses' array still holds the totals
+      // but we can't find categories for them. We should handle the mapping below.
+    }
+    
     const categories = await prisma.category.findMany({
-      where: { id: { in: categoryIds } },
+      where: { id: { in: categoryIds } }, // Now categoryIds is a string[]
     });
 
     // Map to API format: [{ category: "Food", total: 123 }, ...]
     const data = expenses.map((e) => {
+      // Handle the case where categoryId is null
+      if (e.categoryId === null) {
+          return {
+              category: "Uncategorized",
+              total: e._sum.amount ?? 0,
+          };
+      }
+      
       const category = categories.find((c) => c.id === e.categoryId);
       return {
         category: category?.name ?? "Unknown",

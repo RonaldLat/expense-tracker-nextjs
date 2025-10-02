@@ -1,7 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { DataTable } from "./data-table.tsx";
+// FIX: Removed the '.tsx' file extension from the import path
+import { DataTable } from "./data-table";
 import { columnsFactory } from "./columns";
 import { ExpenseForm } from "./ExpenseForm";
 import { EditExpenseForm } from "./EditExpenseForm";
@@ -40,6 +41,8 @@ export default function ExpensesPage() {
   };
 
   // handle update
+  // NOTE: I notice 'value: any' here, which you suppressed the linter for.
+  // Consider defining a type for value based on the 'field' being updated.
   const handleUpdate = async (id: string, field: string, value: any) => {
     await fetch(`/api/expenses/${id}`, {
       method: "PUT",
@@ -47,7 +50,7 @@ export default function ExpensesPage() {
       body: JSON.stringify({ [field]: value }),
     });
     setExpenses((prev) =>
-      prev.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp))
+      prev.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp)),
     );
   };
 
@@ -60,22 +63,25 @@ export default function ExpensesPage() {
   // handle edit save
   const handleEdited = (updated: Expense) => {
     setExpenses((prev) =>
-      prev.map((exp) => (exp.id === updated.id ? updated : exp))
+      prev.map((exp) => (exp.id === updated.id ? updated : exp)),
     );
   };
 
   return (
     <div className="p-6 space-y-6">
-      {/* ✅ Form stays at top */}
-      <ExpenseForm categories={categories} onExpenseAdded={handleExpenseAdded} />
+      {/* Form stays at top */}
+      <ExpenseForm
+        categories={categories}
+        onExpenseAdded={handleExpenseAdded}
+      />
 
-      {/* ✅ Table below */}
+      {/* Table below */}
       <DataTable
         columns={columnsFactory(categories, handleUpdate, handleDelete)}
         data={expenses}
       />
 
-      {/* ✅ Edit modal */}
+      {/* Edit modal */}
       {editing && (
         <EditExpenseForm
           expense={editing}

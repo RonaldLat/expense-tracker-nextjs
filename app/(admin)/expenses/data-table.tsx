@@ -12,6 +12,7 @@ import {
   getSortedRowModel,
   useReactTable,
   VisibilityState,
+  OnChangeFn, // <--- ADDED: Correct type for state setter functions
 } from "@tanstack/react-table";
 
 import { Button } from "@/components/ui/button";
@@ -24,17 +25,23 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   sorting?: SortingState;
-  onSortingChange?: (s: SortingState) => void;
+  onSortingChange?: OnChangeFn<SortingState>; // <-- FIX: Use OnChangeFn<SortingState>
   columnFilters?: ColumnFiltersState;
-  onColumnFiltersChange?: (f: ColumnFiltersState) => void;
+  onColumnFiltersChange?: OnChangeFn<ColumnFiltersState>; // <-- FIX: Use OnChangeFn<ColumnFiltersState>
   columnVisibility?: VisibilityState;
-  onColumnVisibilityChange?: (v: VisibilityState) => void;
+  onColumnVisibilityChange?: OnChangeFn<VisibilityState>; // <-- FIX: Use OnChangeFn<VisibilityState>
   categories?: { id: string; name: string }[]; // optional, used to provide filter options for category
 }
 
@@ -67,7 +74,8 @@ export function DataTable<TData, TValue>({
   });
 
   // Find the "category" column so we can render a category filter select
-  const categoryColumn = table.getColumn("category") || table.getColumn("category.name") || null;
+  const categoryColumn =
+    table.getColumn("category") || table.getColumn("category.name") || null;
 
   return (
     <div className="w-full">
@@ -92,7 +100,9 @@ export function DataTable<TData, TValue>({
           <div className="ml-auto">
             <Select
               value={(categoryColumn.getFilterValue() as string) ?? ""}
-              onValueChange={(val) => categoryColumn.setFilterValue(val || undefined)}
+              onValueChange={(val) =>
+                categoryColumn.setFilterValue(val || undefined)
+              }
             >
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="Filter by category" />
@@ -120,7 +130,10 @@ export function DataTable<TData, TValue>({
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -130,17 +143,26 @@ export function DataTable<TData, TValue>({
           <TableBody>
             {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>
@@ -151,10 +173,20 @@ export function DataTable<TData, TValue>({
 
       {/* Pagination */}
       <div className="flex items-center justify-end space-x-2 py-4">
-        <Button variant="outline" size="sm" onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
           Previous
         </Button>
-        <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
           Next
         </Button>
       </div>

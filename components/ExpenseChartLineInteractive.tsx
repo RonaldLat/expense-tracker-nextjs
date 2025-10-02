@@ -24,8 +24,10 @@ type ExpenseItem = {
 
 export default function ExpenseChartLineInteractive() {
   const [data, setData] = React.useState<ExpenseItem[]>([]);
-    "desktop"
-  );
+
+  // FIX: Added the missing state declaration for activeChart.
+  // The original error was caused by the leftover '"desktop"' and ');' from a half-written declaration here.
+  const [activeChart, setActiveChart] = React.useState<"desktop">("desktop");
 
   const chartConfig = {
     desktop: { label: "Expenses", color: "var(--chart-1)" },
@@ -36,9 +38,16 @@ export default function ExpenseChartLineInteractive() {
       .then(async (res) => {
         try {
           const json: ExpenseItem[] = await res.json();
-          setData(json.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+          setData(
+            json.sort(
+              (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+            ),
+          );
         } catch (err) {
-          console.error("Failed to parse JSON from /api/expenses/monthly:", err);
+          console.error(
+            "Failed to parse JSON from /api/expenses/monthly:",
+            err,
+          );
           setData([]);
         }
       })
@@ -52,7 +61,7 @@ export default function ExpenseChartLineInteractive() {
     () => ({
       desktop: data.reduce((acc, curr) => acc + curr.amount, 0),
     }),
-    [data]
+    [data],
   );
 
   return (
@@ -60,9 +69,7 @@ export default function ExpenseChartLineInteractive() {
       <CardHeader className="flex flex-col items-stretch border-b !p-0 sm:flex-row">
         <div className="flex flex-1 flex-col justify-center gap-1 px-6 pb-3 sm:pb-0">
           <CardTitle>Monthly Expense Trend</CardTitle>
-          <CardDescription>
-            Total expenses per month
-          </CardDescription>
+          <CardDescription>Total expenses per month</CardDescription>
         </div>
         <div className="flex">
           <button
@@ -79,7 +86,10 @@ export default function ExpenseChartLineInteractive() {
         </div>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
-        <ChartContainer config={chartConfig} className="aspect-auto h-[250px] w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="aspect-auto h-[250px] w-full"
+        >
           <LineChart data={data} margin={{ left: 12, right: 12 }}>
             <CartesianGrid vertical={false} />
             <XAxis
@@ -90,7 +100,10 @@ export default function ExpenseChartLineInteractive() {
               minTickGap={32}
               tickFormatter={(value) => {
                 const date = new Date(value);
-                return date.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                return date.toLocaleDateString("en-US", {
+                  month: "short",
+                  year: "numeric",
+                });
               }}
             />
             <ChartTooltip

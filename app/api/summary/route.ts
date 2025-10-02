@@ -1,4 +1,3 @@
-// app/api/summary/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
@@ -23,9 +22,18 @@ export async function GET(req: NextRequest) {
     // Populate category names
     const result = await Promise.all(
       summary.map(async (item) => {
+        // FIX: Check for null categoryId before attempting to query the database
+        if (item.categoryId === null) {
+          return {
+            category: "Uncategorized", // Treat null categoryId as "Uncategorized"
+            total: item._sum.amount || 0,
+          };
+        }
+
         const category = await prisma.category.findUnique({
-          where: { id: item.categoryId },
+          where: { id: item.categoryId }, // Now TypeScript knows item.categoryId is a string
         });
+
         return {
           category: category?.name || "Unknown",
           total: item._sum.amount || 0,
