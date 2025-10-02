@@ -1,87 +1,69 @@
 "use client";
 
 import * as React from "react";
-import { DataTable } from "./data-table";
-import { columns as createColumns, Expense } from "./columns";
-import {
-  ColumnDef,
-  SortingState,
-  ColumnFiltersState,
-  VisibilityState,
-} from "@tanstack/react-table";
+import { DataTable } from "./data-table.tsx";
+import { columnsFactory } from "./columns";
+import { ExpenseForm } from "./ExpenseForm";
 
 export type Category = { id: string; name: string };
+export type Expense = {
+  id: string;
+  title: string;
+  amount: number;
+  notes?: string | null;
+  date: string;
+  categoryId?: string | null;
+  category?: { id: string; name: string } | null;
+};
 
 export default function ExpensesPage() {
   const [expenses, setExpenses] = React.useState<Expense[]>([]);
   const [categories, setCategories] = React.useState<Category[]>([]);
-  const [loading, setLoading] = React.useState(true);
 
-  // TanStack state
-  const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
-  );
-  const [columnVisibility, setColumnVisibility] =
-    React.useState<VisibilityState>({});
-
+  // fetch data on mount
   React.useEffect(() => {
-    async function fetchData() {
-      try {
-        const [expensesRes, categoriesRes] = await Promise.all([
-          fetch("/api/expenses"),
-          fetch("/api/categories"),
-        ]);
-        const expensesData: Expense[] = await expensesRes.json();
-        const categoriesData: Category[] = await categoriesRes.json();
-        setExpenses(expensesData);
-        setCategories(categoriesData);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchData();
+    (async () => {
+      const [expRes, catRes] = await Promise.all([
+        fetch("/api/expenses").then((r) => r.json()),
+        fetch("/api/categories").then((r) => r.json()),
+      ]);
+      setExpenses(expRes);
+      setCategories(catRes);
+    })();
   }, []);
 
+  // handle add
+  const handleExpenseAdded = (expense: Expense) => {
+    setExpenses((prev) => [...prev, expense]);
+  };
+
+  // handle update
   const handleUpdate = async (id: string, field: string, value: any) => {
+    await fetch(`/api/expenses/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ [field]: value }),
+    });
     setExpenses((prev) =>
-      prev.map((e) => (e.id === id ? { ...e, [field]: value } : e)),
+      prev.map((exp) => (exp.id === id ? { ...exp, [field]: value } : exp))
     );
-    try {
-      await fetch(`/api/expenses/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ [field]: value }),
-      });
-    } catch (err) {
-      console.error(err);
-    }
   };
 
+  // handle delete
   const handleDelete = async (id: string) => {
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
-    try {
-      await fetch(`/api/expenses/${id}`, { method: "DELETE" });
-    } catch (err) {
-      console.error(err);
-    }
+    await fetch(`/api/expenses/${id}`, { method: "DELETE" });
+    setExpenses((prev) => prev.filter((exp) => exp.id !== id));
   };
-
-  if (loading) return <div className="p-4">Loading...</div>;
 
   return (
-    <div className="container mx-auto py-10">
+    <div className="p-6 space-y-6">
+      {/* ✅ Form stays at top */}
+      <ExpenseForm categories={categories} onExpenseAdded={handleExpenseAdded} />
+
+      {/* ✅ Table below */}
       <DataTable
+        columns={columnsFactory(categories, handleUpdate, handleDelete)}
         data={expenses}
-        columns={createColumns(categories, handleUpdate, handleDelete)}
-        sorting={sorting}
-        onSortingChange={setSorting}
-        columnFilters={columnFilters}
-        onColumnFiltersChange={setColumnFilters}
-        columnVisibility={columnVisibility}
-        onColumnVisibilityChange={setColumnVisibility}
       />
     </div>
   );
